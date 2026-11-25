@@ -1,0 +1,328 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="use-cases" name="Use cases">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="app" value="Hotel booking app" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;fillColor=#f8fbff;verticalAlign=top;spacingTop=12;fontStyle=1;">
+          <mxGeometry as="geometry" x="300" y="35" width="510" height="340" />
+        </mxCell>
+        <mxCell id="Guest" value="Guest" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;">
+          <mxGeometry as="geometry" x="90" y="110" width="65" height="75" />
+        </mxCell>
+        <mxCell id="Receptionist" value="Receptionist" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;">
+          <mxGeometry as="geometry" x="90" y="245" width="65" height="75" />
+        </mxCell>
+        <mxCell id="goal0" value="Search free rooms" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;ellipse;">
+          <mxGeometry as="geometry" x="485" y="78" width="200" height="55" />
+        </mxCell>
+        <mxCell id="Guest0" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Guest" target="goal0">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="Receptionist0" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Receptionist" target="goal0">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="goal1" value="Book a room" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;ellipse;">
+          <mxGeometry as="geometry" x="485" y="148" width="200" height="55" />
+        </mxCell>
+        <mxCell id="Guest1" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Guest" target="goal1">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="Receptionist1" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Receptionist" target="goal1">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="goal2" value="View a booking" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;ellipse;">
+          <mxGeometry as="geometry" x="485" y="218" width="200" height="55" />
+        </mxCell>
+        <mxCell id="Guest2" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Guest" target="goal2">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="Receptionist2" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Receptionist" target="goal2">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="goal3" value="Cancel a booking" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;ellipse;">
+          <mxGeometry as="geometry" x="485" y="288" width="200" height="55" />
+        </mxCell>
+        <mxCell id="Guest3" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Guest" target="goal3">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="Receptionist3" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Receptionist" target="goal3">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="classes" name="Classes">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="BookingService" value="&lt;b&gt;BookingService&lt;/b&gt;&lt;hr&gt;rooms: List&amp;lt;Room&amp;gt;&lt;br&gt;store: ReservationStore&lt;br&gt;email: EmailSender&lt;br&gt;slowStep: Duration&lt;hr&gt;findFreeRooms(stay)&lt;br&gt;reserve(guest, room, stay)&lt;br&gt;cancel(reservationId)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="385" y="35" width="310" height="165" />
+        </mxCell>
+        <mxCell id="ReservationStatus" value="&lt;b&gt;«enumeration»&lt;br&gt;ReservationStatus&lt;/b&gt;&lt;hr&gt;confirmed&lt;br&gt;cancelled" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="40" y="275" width="160" height="100" />
+        </mxCell>
+        <mxCell id="ReservationStore" value="&lt;b&gt;ReservationStore&lt;/b&gt;&lt;hr&gt;rows: List&amp;lt;Reservation&amp;gt;&lt;br&gt;count: int&lt;hr&gt;hasOverlap(room, stay)&lt;br&gt;save(reservation)&lt;br&gt;find(id)&lt;br&gt;countConfirmed(room, stay)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="265" y="260" width="220" height="145" />
+        </mxCell>
+        <mxCell id="EmailSender" value="&lt;b&gt;EmailSender&lt;/b&gt;&lt;hr&gt;sent: int&lt;hr&gt;sendConfirmation(reservation)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="780" y="260" width="225" height="100" />
+        </mxCell>
+        <mxCell id="Guest" value="&lt;b&gt;Guest&lt;/b&gt;&lt;hr&gt;name: String&lt;br&gt;email: String" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="40" y="528" width="160" height="96" />
+        </mxCell>
+        <mxCell id="Reservation" value="&lt;b&gt;Reservation&lt;/b&gt;&lt;hr&gt;id: String&lt;br&gt;guest: Guest&lt;br&gt;room: Room&lt;br&gt;stay: DateRange&lt;br&gt;status: ReservationStatus&lt;hr&gt;blocks(room, stay)&lt;br&gt;cancel()" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="315" y="480" width="245" height="170" />
+        </mxCell>
+        <mxCell id="Room" value="&lt;b&gt;Room&lt;/b&gt;&lt;hr&gt;number: String&lt;br&gt;type: String" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="650" y="528" width="145" height="96" />
+        </mxCell>
+        <mxCell id="DateRange" value="&lt;b&gt;DateRange&lt;/b&gt;&lt;hr&gt;checkIn: DateTime&lt;br&gt;checkOut: DateTime&lt;hr&gt;isValid()&lt;br&gt;overlaps(other)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;align=left;verticalAlign=top;spacing=8;fontSize=13;">
+          <mxGeometry as="geometry" x="850" y="660" width="185" height="125" />
+        </mxCell>
+        <mxCell id="link0" value="uses" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;" source="BookingService" target="ReservationStore">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link1" value="uses" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;" source="BookingService" target="EmailSender">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link2" value="keeps 0..*" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="ReservationStore" target="Reservation">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link3" value="has 1" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Reservation" target="ReservationStatus">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link4" value="1 makes 0..*" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Guest" target="Reservation">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link5" value="0..* reserves 1" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=none;" source="Reservation" target="Room">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link6" value="owns stay dates" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;startArrow=diamond;startFill=1;endArrow=none;" source="Reservation" target="DateRange">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sequence---book" name="Sequence - book">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="person0" value="Maya" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="43" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life0" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="130" y="78" />
+            <mxPoint as="targetPoint" x="130" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="person1" value="BookingService" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="343" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life1" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="78" />
+            <mxPoint as="targetPoint" x="430" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="person2" value="ReservationStore" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="643" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life2" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="730" y="78" />
+            <mxPoint as="targetPoint" x="730" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="person3" value="EmailSender" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="943" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life3" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="1030" y="78" />
+            <mxPoint as="targetPoint" x="1030" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message1" value="1. reserve(Maya, R7, 12–14 Nov)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="130" y="143" />
+            <mxPoint as="targetPoint" x="430" y="143" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message2" value="2. hasOverlap(R7, 12–14 Nov)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="208" />
+            <mxPoint as="targetPoint" x="730" y="208" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message3" value="3. false (no shared night)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="730" y="273" />
+            <mxPoint as="targetPoint" x="430" y="273" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message4" value="4. save(R101, Confirmed)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="338" />
+            <mxPoint as="targetPoint" x="730" y="338" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message5" value="5. sendConfirmation(R101)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="403" />
+            <mxPoint as="targetPoint" x="1030" y="403" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message6" value="6. Accepted R101" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="468" />
+            <mxPoint as="targetPoint" x="130" y="468" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sequence---cancel" name="Sequence - cancel">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="person0" value="Maya" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="43" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life0" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="130" y="78" />
+            <mxPoint as="targetPoint" x="130" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="person1" value="BookingService" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="343" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life1" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="78" />
+            <mxPoint as="targetPoint" x="430" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="person2" value="ReservationStore" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="643" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life2" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="730" y="78" />
+            <mxPoint as="targetPoint" x="730" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="person3" value="R101" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;fontStyle=1;">
+          <mxGeometry as="geometry" x="943" y="30" width="174" height="48" />
+        </mxCell>
+        <mxCell id="life3" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=none;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="1030" y="78" />
+            <mxPoint as="targetPoint" x="1030" y="510" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message1" value="1. cancel(&quot;R101&quot;)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="130" y="143" />
+            <mxPoint as="targetPoint" x="430" y="143" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message2" value="2. find(&quot;R101&quot;)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="208" />
+            <mxPoint as="targetPoint" x="730" y="208" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message3" value="3. R101" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="730" y="273" />
+            <mxPoint as="targetPoint" x="430" y="273" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message4" value="4. cancel()" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="338" />
+            <mxPoint as="targetPoint" x="1030" y="338" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message5" value="5. true (now Cancelled)" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="1030" y="403" />
+            <mxPoint as="targetPoint" x="430" y="403" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="message6" value="6. true" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;dashed=1;endArrow=open;">
+          <mxGeometry as="geometry" relative="1">
+            <mxPoint as="sourcePoint" x="430" y="468" />
+            <mxPoint as="targetPoint" x="130" y="468" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="activity---book" name="Activity - book">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="start" value="" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;ellipse;fillColor=#20344a;">
+          <mxGeometry as="geometry" x="361" y="30" width="28" height="28" />
+        </mxCell>
+        <mxCell id="valid" value="Check-out after check-in?" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rhombus;fillColor=#fff1cb;">
+          <mxGeometry as="geometry" x="260" y="100" width="230" height="100" />
+        </mxCell>
+        <mxCell id="overlap" value="Confirmed stay&lt;br&gt;shares a night?" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rhombus;fillColor=#fff1cb;">
+          <mxGeometry as="geometry" x="260" y="243" width="230" height="100" />
+        </mxCell>
+        <mxCell id="invalid" value="InvalidDates&lt;br&gt;Save nothing" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;">
+          <mxGeometry as="geometry" x="635" y="122" width="230" height="55" />
+        </mxCell>
+        <mxCell id="unavailable" value="Unavailable&lt;br&gt;Save nothing" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;">
+          <mxGeometry as="geometry" x="635" y="266" width="230" height="55" />
+        </mxCell>
+        <mxCell id="save" value="Save as Confirmed" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;">
+          <mxGeometry as="geometry" x="260" y="390" width="230" height="55" />
+        </mxCell>
+        <mxCell id="email" value="Send confirmation" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;">
+          <mxGeometry as="geometry" x="260" y="472" width="230" height="55" />
+        </mxCell>
+        <mxCell id="accepted" value="Accepted + reservation ID" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;rounded=1;">
+          <mxGeometry as="geometry" x="260" y="554" width="230" height="55" />
+        </mxCell>
+        <mxCell id="end" value="●" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontSize=14;fontColor=#20344a;strokeColor=#20344a;fillColor=#e9f2fc;ellipse;fillColor=#ffffff;fontSize=18;">
+          <mxGeometry as="geometry" x="361" y="650" width="28" height="28" />
+        </mxCell>
+        <mxCell id="flow0" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="start" target="valid">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow1" value="Yes" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="valid" target="overlap">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow2" value="No" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="valid" target="invalid">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow3" value="Yes" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="overlap" target="unavailable">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow4" value="No" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="overlap" target="save">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow5" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="save" target="email">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow6" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="email" target="accepted">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="flow7" value="" edge="1" parent="1" style="html=1;strokeColor=#20344a;fontColor=#20344a;fontSize=13;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;" source="accepted" target="end">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
