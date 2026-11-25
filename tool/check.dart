@@ -1,12 +1,14 @@
-import '../bin/hotel_booking.dart';
+import 'package:hotel_booking/hotel_booking.dart';
+
+import '../bin/main.dart';
 
 void check(bool condition, String description) {
   if (!condition) throw StateError(description);
 }
 
 Future<void> main() async {
-  final store = ReservationStore();
-  final email = EmailSender();
+  final store = InMemoryReservationStore();
+  final email = EmailNotificationSender();
   final service = BookingService([r7, r8], store, email);
   final dates = nov(12, 14);
 
@@ -39,9 +41,9 @@ Future<void> main() async {
   check(store.find('R101')?.status == ReservationStatus.cancelled &&
       names(service.findFreeRooms(dates)) == 'R7, R8', 'R4 history and availability');
 
-  final raceStore = ReservationStore();
-  final race = BookingService([r7, r8], raceStore, EmailSender());
+  final raceStore = InMemoryReservationStore();
+  final race = BookingService([r7, r8], raceStore, EmailNotificationSender());
   await Future.wait([race.reserve(maya, r7, dates), race.reserve(omar, r7, dates)]);
   check(raceStore.countConfirmed(r7, dates) == 2, 'P03 race is reproducible');
-  print('P03 checks passed.');
+  print('P04 smoke checks passed.');
 }

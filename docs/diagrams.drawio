@@ -325,4 +325,51 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="classes-after" name="Classes - after">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="service" value="&lt;b&gt;BookingService&lt;/b&gt;&lt;hr&gt;store: ReservationStore&lt;br&gt;notifications: NotificationSender&lt;hr&gt;findFreeRooms(), reserve(), cancel()" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#e9f2fc;">
+          <mxGeometry as="geometry" x="383" y="42" width="325" height="112" />
+        </mxCell>
+        <mxCell id="store" value="«interface»&lt;br&gt;&lt;b&gt;ReservationStore&lt;/b&gt;&lt;hr&gt;count: int&lt;br&gt;hasOverlap(room, stay), save(reservation)&lt;br&gt;find(id)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#fff1cb;">
+          <mxGeometry as="geometry" x="118" y="253" width="310" height="138" />
+        </mxCell>
+        <mxCell id="sender" value="«interface»&lt;br&gt;&lt;b&gt;NotificationSender&lt;/b&gt;&lt;hr&gt;sendConfirmation(reservation)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#fff1cb;">
+          <mxGeometry as="geometry" x="685" y="253" width="310" height="108" />
+        </mxCell>
+        <mxCell id="memory" value="&lt;b&gt;InMemoryReservationStore&lt;/b&gt;&lt;hr&gt;rows: List&amp;lt;Reservation&amp;gt;&lt;br&gt;count, hasOverlap(), save(), find()" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#e9f2fc;">
+          <mxGeometry as="geometry" x="40" y="510" width="256" height="113" />
+        </mxCell>
+        <mxCell id="email" value="&lt;b&gt;EmailNotificationSender&lt;/b&gt;&lt;hr&gt;sent: int&lt;br&gt;sendConfirmation(reservation)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#e9f2fc;">
+          <mxGeometry as="geometry" x="315" y="510" width="238" height="103" />
+        </mxCell>
+        <mxCell id="sms" value="&lt;b&gt;SmsNotificationSender&lt;/b&gt;&lt;hr&gt;sent: int&lt;br&gt;sendConfirmation(reservation)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#e9f2fc;">
+          <mxGeometry as="geometry" x="575" y="510" width="238" height="103" />
+        </mxCell>
+        <mxCell id="fake" value="«tests only»&lt;br&gt;&lt;b&gt;FakeNotificationSender&lt;/b&gt;&lt;hr&gt;fail: bool, sent: List&amp;lt;String&amp;gt;&lt;br&gt;sendConfirmation(reservation)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=8;strokeColor=#20344a;fillColor=#e9f2fc;">
+          <mxGeometry as="geometry" x="835" y="510" width="250" height="115" />
+        </mxCell>
+        <mxCell id="link0" value="uses" edge="1" parent="1" source="service" target="store" style="html=1;dashed=1;endFill=0;endArrow=open;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link1" value="uses" edge="1" parent="1" source="service" target="sender" style="html=1;dashed=1;endFill=0;endArrow=open;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link2" value="implements" edge="1" parent="1" source="memory" target="store" style="html=1;dashed=1;endFill=0;endArrow=block;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link3" value="implements" edge="1" parent="1" source="email" target="sender" style="html=1;dashed=1;endFill=0;endArrow=block;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link4" value="implements" edge="1" parent="1" source="sms" target="sender" style="html=1;dashed=1;endFill=0;endArrow=block;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="link5" value="implements" edge="1" parent="1" source="fake" target="sender" style="html=1;dashed=1;endFill=0;endArrow=block;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>

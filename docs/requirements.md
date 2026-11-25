@@ -49,3 +49,11 @@ A booking can be looked up by its id.
 Check: Look up R101 immediately after Maya books.
 
 Proof: `R101: Maya, R7, 12-14 Nov, Confirmed` in the verification command. The main demo keeps its nine-line output.
+
+## R6 · Failed message
+
+If the confirmation cannot be sent, the booking stays saved and Accepted, and the failure is reported.
+
+Check: Use a fake sender that throws when Maya books R7.
+
+Proof: The R6 test expects `Accepted R101`, `notificationFailed == true`, one confirmed reservation, and R7 still unavailable for that stay.

@@ -1,6 +1,8 @@
 name: hotel_booking
-description: P03 in-memory Dart hotel booking exercise.
-version: 0.1.0
+description: P04 Dart hotel booking refactoring.
+version: 0.2.0
 publish_to: none
 environment:
   sdk: '>=3.0.0 <4.0.0'
+dev_dependencies:
+  test: ^1.24.0
