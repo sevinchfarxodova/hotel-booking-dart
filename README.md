@@ -1,12 +1,15 @@
-# P03 · Hotel booking in Dart
+# P04 · Hotel booking in Dart
 
-The first version of the course project keeps reservations in memory. Use Dart
-3 or later. The project has no external package dependencies.
+P04 refactors the hotel-booking project around reservation storage and notification interfaces. The app still uses in-memory storage and simulated notifications. If delivery fails, the saved booking remains accepted and the result reports the failure.
+
+Use Dart 3 or later. The test dependency is downloaded on first setup.
 
 ```sh
+dart pub get
 dart analyze
-dart run bin/hotel_booking.dart
-dart run bin/hotel_booking.dart --race
+dart test
+dart run bin/main.dart
+dart run bin/main.dart --race
 dart run tool/check.dart
 ```
 
@@ -32,6 +35,8 @@ concurrency bug in P09.
 - [Design notes](docs/design-notes.md)
 - [Five editable diagrams](docs/diagrams.drawio) for diagrams.net
 
-The archive includes a Git bundle with the P03 commit and tag. After
-extracting it, run `git clone hotel-booking-p03.bundle hotel-booking-dart`
-from the extracted directory to restore the repository for P04.
+The editable draw.io file includes the original five P03 pages and the new
+**Classes - after** page. A PNG preview of that page is included in the ZIP.
+
+The Git bundle preserves the P03 and P04 commits and tags. Continue P05 from
+the P04 commit on the same course repository.
