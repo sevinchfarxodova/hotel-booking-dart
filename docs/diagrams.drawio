@@ -372,4 +372,33 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="context-map" name="Context map">
+    <mxGraphModel grid="1" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rooms" value="&lt;b&gt;Rooms (Inventory)&lt;/b&gt;&lt;hr&gt;Keeps room numbers, types and nightly prices&lt;br&gt;Status: In service / Out of service&lt;br&gt;Owns room offers and rates" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fontSize=14;strokeColor=#20344a;fillColor=#ffffff;">
+          <mxGeometry as="geometry" x="55" y="45" width="330" height="110" />
+        </mxCell>
+        <mxCell id="payments" value="&lt;b&gt;Payments&lt;/b&gt;&lt;hr&gt;Keeps deposits and their amounts&lt;br&gt;Status: Paid / Declined&lt;br&gt;Owns the 30% deposit and refund rules" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fontSize=14;strokeColor=#20344a;fillColor=#ffffff;">
+          <mxGeometry as="geometry" x="680" y="45" width="330" height="110" />
+        </mxCell>
+        <mxCell id="reservations" value="&lt;b&gt;Reservations&lt;/b&gt;&lt;hr&gt;Keeps guests, stays and reservations&lt;br&gt;Status: Confirmed / Cancelled&lt;br&gt;Owns the booking rule" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fontSize=14;strokeColor=#20344a;fillColor=#dcf3e0;">
+          <mxGeometry as="geometry" x="55" y="420" width="330" height="110" />
+        </mxCell>
+        <mxCell id="notifications" value="&lt;b&gt;Notifications&lt;/b&gt;&lt;hr&gt;Keeps confirmations and delivery outcomes&lt;br&gt;Status: Sent / Failed&lt;br&gt;Owns email/SMS delivery" vertex="1" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fontSize=14;strokeColor=#20344a;fillColor=#ffffff;">
+          <mxGeometry as="geometry" x="680" y="420" width="330" height="110" />
+        </mxCell>
+        <mxCell id="to-rooms" value="Asks: which rooms exist?" edge="1" parent="1" source="reservations" target="rooms" style="html=1;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;strokeWidth=2;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="to-payments" value="Asks: take a deposit (P17)" edge="1" parent="1" source="reservations" target="payments" style="html=1;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;strokeWidth=2;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="to-notifications" value="Announces: ReservationConfirmed" edge="1" parent="1" source="reservations" target="notifications" style="html=1;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;strokeWidth=2;dashed=1;dashPattern=1 4;strokeColor=#248346;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>
