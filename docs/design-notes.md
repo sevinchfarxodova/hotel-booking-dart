@@ -47,3 +47,43 @@ Refactoring changes the structure of the code while preserving its observable be
 - Race: The check and save still have an asynchronous gap. Run `dart run bin/main.dart --race` and expect two confirmed reservations.
 
 The Dart SDK was unavailable during packaging, so these runtime results remain to be verified.
+
+# P06 design notes
+
+## Before
+
+- Behaviour tests: the eight P04 checks are the safety net; P06 adds three architecture checks.
+- Demo: preserve the same nine output lines as P04.
+- Race: preserve the deliberate two-booking race; P09 is where it is fixed.
+
+## Modules
+
+| Module | Public contract | Internal implementation |
+| --- | --- | --- |
+| Rooms | `Room`, `RoomCatalog` | `InMemoryRoomCatalog` |
+| Reservations | `BookingService`, `BookingResult`, `DateRange`, `Guest`, `Reservation`, `ReservationStatus`, `ReservationStore` | `InMemoryReservationStore` |
+| Payments | `PaymentStatus`, `PaymentService` | `SimulatedPaymentService` |
+| Notifications | `Confirmation`, `NotificationSender` | `EmailNotificationSender`, `SmsNotificationSender` |
+
+`Confirmation` carries only reservation ID, guest email, room number, check-in and check-out. Notifications does not import the Reservations model, so the two modules do not form a dependency cycle.
+
+## Architecture rules
+
+1. Reservations may use other modules' public contracts, but never their `src/` implementation files.
+2. Rooms has no dependency on Reservations, Payments or Notifications.
+3. Payments and Notifications do not depend on Reservations.
+
+`test/architecture_test.dart` checks the imports in `lib/`. The three tests run with the eight behavior tests using `dart test`.
+
+## Broken on purpose
+
+To prove the first guard works, temporarily add `import 'package:hotel_booking/notifications/src/email.dart';` to `lib/reservations/src/booking.dart`, run `dart test`, and confirm the Reservations boundary test fails with the offending import. Remove that line and run `dart test` again. Do not keep the forbidden import.
+
+## After
+
+- Behaviour checks: the same eight P04 tests, plus three architecture checks (11 total).
+- Demo: the same nine P04 output lines.
+- Race: still demonstrates two confirmed bookings for R7 because the availability check and save are not yet atomic.
+
+The module folders make the four P05 contexts visible in code. A single Dart program still builds and runs; `bin/main.dart` is the composition root that constructs internal adapters.
+

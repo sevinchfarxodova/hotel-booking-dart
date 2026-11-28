@@ -1,8 +1,8 @@
-# P04 · Hotel booking in Dart
+# P06 · Hotel booking in Dart
 
-P04 refactors the hotel-booking project around reservation storage and notification interfaces. The app still uses in-memory storage and simulated notifications. If delivery fails, the saved booking remains accepted and the result reports the failure.
+P06 refactors the P04/P05 hotel booking app into a modular monolith with four business modules: Rooms, Reservations, Payments and Notifications. Each module has a public contract; implementation details live under `lib/<module>/src/`. The behavior remains the same, and three architecture tests guard the module boundaries.
 
-Use Dart 3 or later. The test dependency is downloaded on first setup.
+Use Dart 3 or later.
 
 ```sh
 dart pub get
@@ -10,33 +10,25 @@ dart analyze
 dart test
 dart run bin/main.dart
 dart run bin/main.dart --race
-dart run tool/check.dart
 ```
 
-The normal demo prints the nine lines below.
+The test suite contains the eight P04 booking behavior tests and three P06 architecture tests. The demo prints the same nine lines as P04. Race mode deliberately continues to reproduce the double-booking gap; the course fixes it in P09.
+
+- [Context definitions](docs/contexts.md)
+- [Design notes](docs/design-notes.md)
+- [P06 modular-monolith decision](docs/adr-001-modular-monolith.md)
+- [Requirements and expected behavior](docs/requirements.md)
+- [Editable diagrams](docs/diagrams.drawio) — P05 pages plus the new **Modules** page
+- [Modules diagram preview](docs/modules.png)
+
+The module structure is:
 
 ```text
-Free rooms 12-14 Nov: R7, R8
-Maya books R7 12-14 Nov: Accepted R101
-Omar books R7 13-15 Nov: Unavailable
-Nora books R7 14-16 Nov: Accepted R102
-Omar books R8 15-15 Nov: InvalidDates
-Free rooms 12-14 Nov: R8
-Maya cancels R101: True
-Free rooms 12-14 Nov: R7, R8
-Confirmation emails sent: 2
+lib/
+├── rooms/          rooms.dart · src/catalog.dart
+├── reservations/   reservations.dart · src/booking.dart, domain.dart, store.dart
+├── payments/       payments.dart · src/simulated.dart
+└── notifications/  notifications.dart · src/email.dart, sms.dart
 ```
 
-The race mode intentionally produces two accepted bookings. It demonstrates
-the gap between the availability check and the save. The course fixes that
-concurrency bug in P09.
-
-- [Requirements and expected output](docs/requirements.md)
-- [Design notes](docs/design-notes.md)
-- [Five editable diagrams](docs/diagrams.drawio) for diagrams.net
-
-The editable draw.io file includes the original five P03 pages and the new
-**Classes - after** page. A PNG preview of that page is included in the ZIP.
-
-The Git bundle preserves the P03 and P04 commits and tags. Continue P05 from
-the P04 commit on the same course repository.
+`bin/main.dart` is the composition root and is the only application source file that constructs internal adapters. Tests may construct them to arrange fixtures.

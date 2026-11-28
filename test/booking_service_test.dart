@@ -1,18 +1,20 @@
-// Tests for the booking service after the P04 refactoring.
-// Run them from the hotel-booking folder:  dart test
-import 'package:hotel_booking/hotel_booking.dart';
+// The eight P04 behaviour checks; only the module imports and notification message changed.
+import 'package:hotel_booking/notifications/notifications.dart';
+import 'package:hotel_booking/notifications/src/sms.dart';
+import 'package:hotel_booking/reservations/reservations.dart';
+import 'package:hotel_booking/reservations/src/store.dart';
+import 'package:hotel_booking/rooms/rooms.dart';
 import 'package:test/test.dart';
 
 final r7 = Room('R7', 'Standard');
 final r8 = Room('R8', 'Deluxe');
-final maya = Guest('Maya', 'maya@example.com');
-final omar = Guest('Omar', 'omar@example.com');
-final nora = Guest('Nora', 'nora@example.com');
+const maya = Guest('Maya', 'maya@example.com');
+const omar = Guest('Omar', 'omar@example.com');
+const nora = Guest('Nora', 'nora@example.com');
 
 DateRange nov(int checkIn, int checkOut) =>
     DateRange(DateTime.utc(2026, 11, checkIn), DateTime.utc(2026, 11, checkOut));
 
-// A stand-in sender for tests: remembers what it would send, or fails on purpose.
 class FakeNotificationSender implements NotificationSender {
   FakeNotificationSender({this.fail = false});
 
@@ -20,13 +22,12 @@ class FakeNotificationSender implements NotificationSender {
   final List<String> sent = [];
 
   @override
-  void sendConfirmation(Reservation reservation) {
+  void sendConfirmation(Confirmation confirmation) {
     if (fail) throw StateError('The mail server is down.');
-    sent.add(reservation.id);
+    sent.add(confirmation.reservationId);
   }
 }
 
-// The only place that builds the service: after the refactoring it takes any sender.
 ({BookingService service, InMemoryReservationStore store, FakeNotificationSender sender})
     newService({bool failingSender = false}) {
   final store = InMemoryReservationStore();

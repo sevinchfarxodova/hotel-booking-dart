@@ -401,4 +401,42 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="modules" name="Modules">
+    <mxGraphModel dx="1100" dy="700" grid="1" page="1" pageWidth="1200" pageHeight="780" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rooms" value="Rooms&#10;&#10;Public contract&#10;Room · RoomCatalog" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fontSize=16;fontStyle=1;strokeWidth=2;strokeColor=#4779a8;fillColor=#f3f8fd;fontColor=#20344a;" vertex="1" parent="1">
+          <mxGeometry x="60" y="65" width="235" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="payments" value="Payments&#10;&#10;Public contract&#10;PaymentService · PaymentStatus" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fontSize=16;fontStyle=1;strokeWidth=2;strokeColor=#4779a8;fillColor=#f3f8fd;fontColor=#20344a;" vertex="1" parent="1">
+          <mxGeometry x="365" y="65" width="265" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="notifications" value="Notifications&#10;&#10;Public contract&#10;Confirmation · NotificationSender" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fontSize=16;fontStyle=1;strokeWidth=2;strokeColor=#4779a8;fillColor=#f3f8fd;fontColor=#20344a;" vertex="1" parent="1">
+          <mxGeometry x="720" y="65" width="330" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="email" value="Internal&#10;EmailNotificationSender" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fontSize=16;fontStyle=1;strokeWidth=2;dashed=1;dashPattern=7 5;strokeColor=#8056a5;fillColor=#f5effb;fontColor=#51376d;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="775" y="285" width="220" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="reservations" value="Reservations&#10;&#10;BookingService · ReservationStore&#10;BookingResult · Reservation" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=14;fontSize=16;fontStyle=1;strokeWidth=2;strokeColor=#2d8a56;fillColor=#dff3e6;fontColor=#194b30;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="345" y="480" width="360" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="uses-rooms" value="Uses" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 6;strokeColor=#52657a;strokeWidth=2;endArrow=open;endFill=0;fontSize=13;fontColor=#52657a;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="reservations" target="rooms">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uses-payments" value="Uses" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 6;strokeColor=#52657a;strokeWidth=2;endArrow=open;endFill=0;fontSize=13;fontColor=#52657a;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="reservations" target="payments">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uses-notifications" value="Uses" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 6;strokeColor=#52657a;strokeWidth=2;endArrow=open;endFill=0;fontSize=13;fontColor=#52657a;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="reservations" target="notifications">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="implements" value="Implements" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 6;strokeColor=#8056a5;strokeWidth=2;endArrow=open;endFill=0;fontSize=13;fontColor=#8056a5;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="email" target="notifications">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="forbidden" value="Forbidden" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 6;strokeColor=#c43b3b;strokeWidth=2;endArrow=open;endFill=0;fontSize=13;fontColor=#c43b3b;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="reservations" target="email">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>

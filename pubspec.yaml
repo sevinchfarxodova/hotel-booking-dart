@@ -1,6 +1,6 @@
 name: hotel_booking
-description: P04 Dart hotel booking refactoring.
-version: 0.2.0
+description: P06 Dart hotel booking modular monolith.
+version: 0.6.0
 publish_to: none
 environment:
   sdk: '>=3.0.0 <4.0.0'

@@ -1,13 +1,9 @@
+import 'package:hotel_booking/rooms/rooms.dart';
+
+import 'booking.dart';
 import 'domain.dart';
 
-abstract interface class ReservationStore {
-  int get count;
-  bool hasOverlap(Room room, DateRange stay);
-  void save(Reservation reservation);
-  Reservation? find(String id);
-}
-
-// Keeps reservations in a list. A later practice replaces it with a database.
+/// List-backed store. Kept in src/ so other modules use the ReservationStore contract.
 class InMemoryReservationStore implements ReservationStore {
   final List<Reservation> _rows = [];
 
@@ -20,7 +16,6 @@ class InMemoryReservationStore implements ReservationStore {
   @override
   void save(Reservation reservation) => _rows.add(reservation);
 
-  // Returns null when no reservation has that id.
   @override
   Reservation? find(String id) {
     for (final row in _rows) {
@@ -29,6 +24,7 @@ class InMemoryReservationStore implements ReservationStore {
     return null;
   }
 
+  @override
   int countConfirmed(Room room, DateRange stay) =>
       _rows.where((row) => row.blocks(room, stay)).length;
 }
