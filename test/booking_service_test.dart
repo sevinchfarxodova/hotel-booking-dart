@@ -1,4 +1,4 @@
-// The eight P04 behaviour checks; only the module imports and notification message changed.
+// Eight P04 behaviour checks preserved through P07's async store and module boundaries.
 import 'package:hotel_booking/notifications/notifications.dart';
 import 'package:hotel_booking/notifications/src/sms.dart';
 import 'package:hotel_booking/reservations/reservations.dart';
@@ -67,8 +67,8 @@ void main() {
   test('cancelling frees the room again', () async {
     final fixture = newService();
     await fixture.service.reserve(maya, r7, nov(12, 14));
-    expect(fixture.service.cancel('R101'), isTrue);
-    expect(fixture.service.findFreeRooms(nov(12, 14)), contains(r7));
+    expect(await fixture.service.cancel('R101'), isTrue);
+    expect(await fixture.service.findFreeRooms(nov(12, 14)), contains(r7));
   });
 
   test('one confirmation per accepted booking', () async {
@@ -86,7 +86,7 @@ void main() {
     expect(result.notificationFailed, isTrue);
     expect(fixture.store.count, 1);
     expect(fixture.store.find('R101')?.status, ReservationStatus.confirmed);
-    expect(fixture.service.findFreeRooms(nov(12, 14)), isNot(contains(r7)));
+    expect(await fixture.service.findFreeRooms(nov(12, 14)), isNot(contains(r7)));
   });
 
   test('SMS confirmations need no change to BookingService', () async {

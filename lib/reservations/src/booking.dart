@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:hotel_booking/notifications/notifications.dart';
 import 'package:hotel_booking/rooms/rooms.dart';
 
 import 'domain.dart';
 
-/// Storage promise used by BookingService. P07 can replace the list with PostgreSQL.
+/// Storage promise used by BookingService. P07 supports memory and PostgreSQL.
 abstract interface class ReservationStore {
-  int get count;
-  bool hasOverlap(Room room, DateRange stay);
-  void save(Reservation reservation);
-  Reservation? find(String id);
-  int countConfirmed(Room room, DateRange stay);
+  FutureOr<int> get count;
+  FutureOr<bool> hasOverlap(Room room, DateRange stay);
+  FutureOr<void> save(Reservation reservation);
+  FutureOr<Reservation?> find(String id);
+  FutureOr<int> countConfirmed(Room room, DateRange stay);
 }
 
 class BookingResult {
@@ -23,7 +25,7 @@ class BookingResult {
   String toString() => reservationId == null ? outcome : '$outcome $reservationId';
 }
 
-/// Owns the booking rules and uses only other modules' public contracts.
+/// Owns booking rules and uses only other modules' public contracts.
 class BookingService {
   BookingService(this.rooms, this.store, this.notifications, {this.slowStep = Duration.zero});
 
@@ -32,18 +34,23 @@ class BookingService {
   final NotificationSender notifications;
   final Duration slowStep;
 
-  List<Room> findFreeRooms(DateRange stay) =>
-      rooms.where((room) => !store.hasOverlap(room, stay)).toList();
+  Future<List<Room>> findFreeRooms(DateRange stay) async {
+    final free = <Room>[];
+    for (final room in rooms) {
+      if (!await store.hasOverlap(room, stay)) free.add(room);
+    }
+    return free;
+  }
 
   Future<BookingResult> reserve(Guest guest, Room room, DateRange stay) async {
     if (!stay.isValid()) return const BookingResult('InvalidDates');
-    if (store.hasOverlap(room, stay)) return const BookingResult('Unavailable');
+    if (await store.hasOverlap(room, stay)) return const BookingResult('Unavailable');
 
-    // P06 keeps the P03/P04 race visible; P09 will close this check/save gap.
+    // P07 preserves the check/save gap so P09 can fix it explicitly.
     await Future<void>.delayed(slowStep);
 
-    final reservation = Reservation('R${101 + store.count}', guest, room, stay);
-    store.save(reservation);
+    final reservation = Reservation('R${101 + (await store.count)}', guest, room, stay);
+    await store.save(reservation);
     try {
       notifications.sendConfirmation(Confirmation(
         reservation.id,
@@ -53,11 +60,13 @@ class BookingService {
         stay.checkOut,
       ));
     } catch (_) {
-      // A failed notification does not roll back a booking that was already saved.
       return BookingResult('Accepted', reservation.id, true);
     }
     return BookingResult('Accepted', reservation.id);
   }
 
-  bool cancel(String reservationId) => store.find(reservationId)?.cancel() ?? false;
+  Future<bool> cancel(String reservationId) async {
+    final reservation = await store.find(reservationId);
+    return reservation?.cancel() ?? false;
+  }
 }

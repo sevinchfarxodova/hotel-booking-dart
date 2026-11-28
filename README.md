@@ -1,34 +1,45 @@
-# P06 · Hotel booking in Dart
+# P07 · Hotel booking in Dart
 
-P06 refactors the P04/P05 hotel booking app into a modular monolith with four business modules: Rooms, Reservations, Payments and Notifications. Each module has a public contract; implementation details live under `lib/<module>/src/`. The behavior remains the same, and three architecture tests guard the module boundaries.
+P07 extends the P06 modular monolith with a Shelf HTTP API and PostgreSQL persistence. The app exposes room availability, reservation creation and cancellation at `http://localhost:5080`; it serves its contract from `/openapi.yaml`. The booking rule stays in Reservations. The intentional race remains until P09.
 
-Use Dart 3 or later.
+## Requirements
+
+- Dart 3 or later
+- Docker Desktop with the Docker engine running
+- Internet for the first dependency and PostgreSQL image downloads
+
+## Run
 
 ```sh
 dart pub get
 dart analyze
 dart test
-dart run bin/main.dart
+docker compose up -d
+docker compose ps
+docker compose exec db psql -U hotel -d hotel -c "SELECT * FROM rooms;"
+dart run bin/main.dart --demo
 dart run bin/main.dart --race
+dart run bin/main.dart
 ```
 
-The test suite contains the eight P04 booking behavior tests and three P06 architecture tests. The demo prints the same nine lines as P04. Race mode deliberately continues to reproduce the double-booking gap; the course fixes it in P09.
+The API starts on `http://localhost:5080`. Use `--demo` and `--race` to run the P06 console demonstrations without PostgreSQL. The automated tests comprise 8 booking behavior tests, 3 architecture tests and 4 API tests (15 total); the API tests use in-memory storage. The PostgreSQL request and restart checks are documented in [docs/api-check.md](docs/api-check.md).
 
-- [Context definitions](docs/contexts.md)
+If port 5432 is busy, use the same alternate port for Docker and the Dart app:
+
+```sh
+export HOTEL_DB_PORT=15432
+docker compose up -d
+HOTEL_DB_PORT=15432 dart run bin/main.dart
+```
+
+## Project notes
+
+- [Capacity estimate](docs/capacity.md)
+- [API contract](docs/openapi.yaml)
+- [API request and restart check](docs/api-check.md)
+- [L04 assumptions and decisions](docs/l04-notes.md)
 - [Design notes](docs/design-notes.md)
-- [P06 modular-monolith decision](docs/adr-001-modular-monolith.md)
-- [Requirements and expected behavior](docs/requirements.md)
-- [Editable diagrams](docs/diagrams.drawio) — P05 pages plus the new **Modules** page
-- [Modules diagram preview](docs/modules.png)
+- [ADR-001](docs/adr-001-modular-monolith.md)
+- [Editable diagrams](docs/diagrams.drawio)
 
-The module structure is:
-
-```text
-lib/
-├── rooms/          rooms.dart · src/catalog.dart
-├── reservations/   reservations.dart · src/booking.dart, domain.dart, store.dart
-├── payments/       payments.dart · src/simulated.dart
-└── notifications/  notifications.dart · src/email.dart, sms.dart
-```
-
-`bin/main.dart` is the composition root and is the only application source file that constructs internal adapters. Tests may construct them to arrange fixtures.
+Stop PostgreSQL and preserve its data with `docker compose down`. Use `docker compose down -v` only when you want to remove the data volume and reset the database.

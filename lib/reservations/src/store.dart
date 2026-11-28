@@ -3,7 +3,7 @@ import 'package:hotel_booking/rooms/rooms.dart';
 import 'booking.dart';
 import 'domain.dart';
 
-/// List-backed store. Kept in src/ so other modules use the ReservationStore contract.
+/// List-backed store for the demo and fast tests. PostgreSQL uses the same contract.
 class InMemoryReservationStore implements ReservationStore {
   final List<Reservation> _rows = [];
 

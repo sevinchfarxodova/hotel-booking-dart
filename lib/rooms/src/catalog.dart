@@ -1,6 +1,6 @@
 import '../rooms.dart';
 
-/// List-backed catalog. Only application wiring and tests should construct it.
+/// List-backed catalog for the console demo and unit tests.
 class InMemoryRoomCatalog implements RoomCatalog {
   InMemoryRoomCatalog(List<Room> rooms) : _rooms = List<Room>.unmodifiable(rooms);
 

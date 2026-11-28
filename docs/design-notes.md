@@ -87,3 +87,30 @@ To prove the first guard works, temporarily add `import 'package:hotel_booking/n
 
 The module folders make the four P05 contexts visible in code. A single Dart program still builds and runs; `bin/main.dart` is the composition root that constructs internal adapters.
 
+# P07 design notes
+
+## API decisions
+
+- Shelf and shelf_router host the three operations at `http://localhost:5080`; `GET /openapi.yaml` serves the hand-written contract.
+- The API lives outside the four business modules and uses only public contracts. It validates HTTP shape and translates domain outcomes; Reservations still owns the booking rule.
+- Errors use `application/problem+json` with `title`, `status`, and `detail`. Clients compare `title`.
+- Availability sorts room numbers as text and uses `limit` plus the `after` cursor. The default page limit is 20; valid limits are 1–100.
+- The API first uses the in-memory store for its four fast HTTP tests. The real server uses PostgreSQL. A request-scoped unit of work creates a store, runs a service call, and persists changed reservation status at the end.
+- The database owns separate Rooms and Reservations tables with no cross-context foreign key. It checks primary keys, allowed reservation statuses, and check-out after check-in. The overlap rule remains in BookingService until P09.
+
+## API tests
+
+- `GET /rooms/availability` with the example dates returns 200 and R7/R8.
+- `POST /reservations` for Maya returns 201/R101; Omar's overlapping request returns 409/Unavailable.
+- A same-day check-out returns 400/InvalidDates problem details.
+- `DELETE /reservations/R101` returns 204, then 404/NotFound.
+
+Run these with the eight booking behavior and three architecture tests: `dart test` should report 15 passing tests. The API tests use in-memory storage and do not require Docker.
+
+## After
+
+- Capacity estimate: 0.33 searches/s average, 3.33/s peak (200/min), about 133 room queries/s, 4.38 MB reservation storage/year, and peak bandwidth estimates of 6.67 KB/s search JSON plus 333 KB/s photos.
+- The seven API checks are in `docs/api-check.md`; the eighth and ninth requests prove R102 survives a server restart.
+- `--demo` preserves the P06 nine-line output. `--race` intentionally still demonstrates two accepted requests; P09 is planned to fix the check/save race.
+- P08 will measure p95 latency for 1,000 searches and database queries per search before adding a cache.
+
