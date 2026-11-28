@@ -1,8 +1,12 @@
-import '../payments.dart';
+enum PaymentStatus { authorized, declined }
 
-/// Simulated payment adapter: no card and no network.
+abstract interface class PaymentService {
+  PaymentStatus charge(String guestEmail, int amount);
+}
+
 class SimulatedPaymentService implements PaymentService {
   @override
-  PaymentStatus takeDeposit(String reservationId, int amountCents) =>
-      amountCents > 0 ? PaymentStatus.paid : PaymentStatus.declined;
+  PaymentStatus charge(String guestEmail, int amount) {
+    return amount > 0 ? PaymentStatus.authorized : PaymentStatus.declined;
+  }
 }

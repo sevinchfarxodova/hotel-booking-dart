@@ -1,30 +1,7 @@
-# Capacity estimate: hotel booking app
+# Capacity & Performance Notes
 
-These are estimates from assumptions, not measurements. P08 measures the real app.
-
-## Assumptions
-
-| Assumption | Value | Reason |
-| --- | ---: | --- |
-| Visitors per day | 1,440 | about one visitor a minute |
-| Searches per visitor | 20 | guests try several dates |
-| Bookings per day | 20 | 40 rooms, most stays are two nights |
-| Peak factor | 10 | Friday evenings and holiday sales |
-| Queries per search | 40 | availability asks once per room |
-
-## Results
-
-| Number | Calculation | Result |
-| --- | --- | ---: |
-| Searches, average | 1,440 × 20 ÷ 86,400 seconds | 0.33 per second |
-| Searches, peak | 0.33 × 10 | 3.33 per second = 200 per minute (S1) |
-| Database queries, peak | 3.33 × 40 rooms | 133 per second |
-| Reservation storage | 20 × 365 × 600 bytes | 4.38 MB per year |
-| Bandwidth, peak | 3.33 × 2 KB; 0.17 × 2 MB | 6.67 KB/s search JSON; 333 KB/s photos |
-
-## To measure in P08
-
-- p95 latency for 1,000 availability searches for 12–14 November; target at or below 1 second (S1).
-- Database queries per search, for example through a temporary `/stats` endpoint.
-
-These calculations are planning estimates. They do not claim the current app meets the capacity target.
+- Peak search target (S1): 200 guests searching within 1 minute, `p95 <= 1s`.
+- Energy target (S6): >= 20% reduction per 1,000 searches via cache-aside in Redis.
+- Measured results (see `docs/cache-experiment.md`):
+  - Without cache: 2,000 DB queries per 1,000 searches (2 queries/search for 2 rooms).
+  - With Redis cache-aside (30s TTL): 2 DB queries per 1,000 searches (99.9% hit rate on repeated window).

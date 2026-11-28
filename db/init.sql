@@ -1,19 +1,21 @@
--- Rooms owns rooms and Reservations owns reservations; there is no cross-module foreign key.
 CREATE TABLE IF NOT EXISTS rooms (
-    number text PRIMARY KEY,
-    type   text NOT NULL
+    id VARCHAR(16) PRIMARY KEY,
+    type VARCHAR(64) NOT NULL,
+    capacity INT NOT NULL,
+    price_per_night INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS reservations (
-    id          text PRIMARY KEY,
-    guest_name  text NOT NULL,
-    guest_email text NOT NULL,
-    room        text NOT NULL,
-    check_in    date NOT NULL,
-    check_out   date NOT NULL,
-    status      text NOT NULL CHECK (status IN ('Confirmed', 'Cancelled')),
-    CHECK (check_out > check_in)
+    id VARCHAR(64) PRIMARY KEY,
+    room_id VARCHAR(16) NOT NULL REFERENCES rooms(id),
+    guest_name VARCHAR(128) NOT NULL,
+    guest_email VARCHAR(128) NOT NULL,
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    status VARCHAR(32) NOT NULL
 );
 
-INSERT INTO rooms (number, type) VALUES ('R7', 'Standard'), ('R8', 'Deluxe')
-ON CONFLICT (number) DO NOTHING;
+INSERT INTO rooms (id, type, capacity, price_per_night) VALUES
+    ('R7', 'Standard Double', 2, 120),
+    ('R8', 'Deluxe Suite', 4, 220)
+ON CONFLICT (id) DO NOTHING;

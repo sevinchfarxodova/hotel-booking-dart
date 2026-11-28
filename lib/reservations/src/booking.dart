@@ -1,72 +1,83 @@
-import 'dart:async';
-
-import 'package:hotel_booking/notifications/notifications.dart';
-import 'package:hotel_booking/rooms/rooms.dart';
-
+import '../../notifications/notifications.dart';
+import '../../rooms/rooms.dart';
 import 'domain.dart';
+import 'store.dart';
 
-/// Storage promise used by BookingService. P07 supports memory and PostgreSQL.
-abstract interface class ReservationStore {
-  FutureOr<int> get count;
-  FutureOr<bool> hasOverlap(Room room, DateRange stay);
-  FutureOr<void> save(Reservation reservation);
-  FutureOr<Reservation?> find(String id);
-  FutureOr<int> countConfirmed(Room room, DateRange stay);
+sealed class BookingResult {}
+
+class BookingConfirmed extends BookingResult {
+  BookingConfirmed(this.reservation);
+  final Reservation reservation;
 }
 
-class BookingResult {
-  const BookingResult(this.outcome, [this.reservationId, this.notificationFailed = false]);
-
-  final String outcome;
-  final String? reservationId;
-  final bool notificationFailed;
-
-  @override
-  String toString() => reservationId == null ? outcome : '$outcome $reservationId';
+class RoomUnavailable extends BookingResult {
+  RoomUnavailable(this.roomId);
+  final String roomId;
 }
 
-/// Owns booking rules and uses only other modules' public contracts.
+class UnknownRoom extends BookingResult {
+  UnknownRoom(this.roomId);
+  final String roomId;
+}
+
 class BookingService {
-  BookingService(this.rooms, this.store, this.notifications, {this.slowStep = Duration.zero});
+  BookingService(this._rooms, this._store, this._notifications);
 
-  final List<Room> rooms;
-  final ReservationStore store;
-  final NotificationSender notifications;
-  final Duration slowStep;
+  final List<Room> _rooms;
+  final ReservationStore _store;
+  final NotificationSender _notifications;
 
-  Future<List<Room>> findFreeRooms(DateRange stay) async {
-    final free = <Room>[];
-    for (final room in rooms) {
-      if (!await store.hasOverlap(room, stay)) free.add(room);
+  Future<List<Room>> availableRooms(DateRange stay) async {
+    final available = <Room>[];
+    for (final room in _rooms) {
+      final overlap = await _store.hasOverlap(room, stay);
+      if (!overlap) {
+        available.add(room);
+      }
     }
-    return free;
+    return available;
   }
 
-  Future<BookingResult> reserve(Guest guest, Room room, DateRange stay) async {
-    if (!stay.isValid()) return const BookingResult('InvalidDates');
-    if (await store.hasOverlap(room, stay)) return const BookingResult('Unavailable');
-
-    // P07 preserves the check/save gap so P09 can fix it explicitly.
-    await Future<void>.delayed(slowStep);
-
-    final reservation = Reservation('R${101 + (await store.count)}', guest, room, stay);
-    await store.save(reservation);
-    try {
-      notifications.sendConfirmation(Confirmation(
-        reservation.id,
-        guest.email,
-        room.number,
-        stay.checkIn,
-        stay.checkOut,
-      ));
-    } catch (_) {
-      return BookingResult('Accepted', reservation.id, true);
+  Future<BookingResult> book(String roomId, Guest guest, DateRange stay) async {
+    Room? target;
+    for (final r in _rooms) {
+      if (r.id == roomId) {
+        target = r;
+        break;
+      }
     }
-    return BookingResult('Accepted', reservation.id);
+    if (target == null) return UnknownRoom(roomId);
+
+    // Always checks the authoritative store (PostgreSQL), never the cache.
+    if (await _store.hasOverlap(target, stay)) {
+      return RoomUnavailable(roomId);
+    }
+
+    final existingCount = await _store.count;
+    final id = 'RES-${existingCount + 1}';
+    final reservation = Reservation(
+      id: id,
+      roomId: roomId,
+      guest: guest,
+      stay: stay,
+    );
+    await _store.save(reservation);
+    _notifications.send(
+      Confirmation(
+        reservationId: id,
+        recipient: guest.email,
+        message: 'Confirmed $roomId from ${stay.checkInIso} to ${stay.checkOutIso}',
+      ),
+    );
+    return BookingConfirmed(reservation);
   }
 
   Future<bool> cancel(String reservationId) async {
-    final reservation = await store.find(reservationId);
-    return reservation?.cancel() ?? false;
+    final reservation = await _store.find(reservationId);
+    if (reservation == null) return false;
+    if (reservation.status == ReservationStatus.cancelled) return true;
+    reservation.status = ReservationStatus.cancelled;
+    await _store.save(reservation);
+    return true;
   }
 }

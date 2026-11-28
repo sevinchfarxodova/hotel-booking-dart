@@ -1,9 +1,10 @@
-import '../notifications.dart';
+import 'email.dart';
 
-/// Simulates SMS delivery without network access.
 class SmsNotificationSender implements NotificationSender {
-  int sent = 0;
+  final List<Confirmation> sent = [];
 
   @override
-  void sendConfirmation(Confirmation confirmation) => sent++;
+  void send(Confirmation confirmation) {
+    sent.add(confirmation);
+  }
 }

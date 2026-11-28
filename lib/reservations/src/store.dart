@@ -1,30 +1,51 @@
-import 'package:hotel_booking/rooms/rooms.dart';
-
-import 'booking.dart';
+import 'dart:async';
+import '../../rooms/rooms.dart';
 import 'domain.dart';
 
-/// List-backed store for the demo and fast tests. PostgreSQL uses the same contract.
+abstract interface class ReservationStore {
+  FutureOr<int> get count;
+  FutureOr<bool> hasOverlap(Room room, DateRange stay);
+  FutureOr<void> save(Reservation reservation);
+  FutureOr<Reservation?> find(String id);
+  FutureOr<int> countConfirmed(Room room, DateRange stay);
+}
+
 class InMemoryReservationStore implements ReservationStore {
-  final List<Reservation> _rows = [];
+  final Map<String, Reservation> _reservations = {};
 
   @override
-  int get count => _rows.length;
+  int get count => _reservations.length;
 
   @override
-  bool hasOverlap(Room room, DateRange stay) => _rows.any((row) => row.blocks(room, stay));
-
-  @override
-  void save(Reservation reservation) => _rows.add(reservation);
-
-  @override
-  Reservation? find(String id) {
-    for (final row in _rows) {
-      if (row.id == id) return row;
+  bool hasOverlap(Room room, DateRange stay) {
+    for (final r in _reservations.values) {
+      if (r.roomId == room.id &&
+          r.status == ReservationStatus.confirmed &&
+          r.stay.overlaps(stay)) {
+        return true;
+      }
     }
-    return null;
+    return false;
   }
 
   @override
-  int countConfirmed(Room room, DateRange stay) =>
-      _rows.where((row) => row.blocks(room, stay)).length;
+  void save(Reservation reservation) {
+    _reservations[reservation.id] = reservation;
+  }
+
+  @override
+  Reservation? find(String id) => _reservations[id];
+
+  @override
+  int countConfirmed(Room room, DateRange stay) {
+    var total = 0;
+    for (final r in _reservations.values) {
+      if (r.roomId == room.id &&
+          r.status == ReservationStatus.confirmed &&
+          r.stay.overlaps(stay)) {
+        total++;
+      }
+    }
+    return total;
+  }
 }

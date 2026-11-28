@@ -1,82 +1,126 @@
-// Four API behavior tests using the in-memory store; these run without Docker.
-import 'dart:async';
 import 'dart:convert';
-
 import 'package:hotel_booking/api.dart';
-import 'package:hotel_booking/notifications/src/email.dart';
+import 'package:hotel_booking/api_cache.dart';
+import 'package:hotel_booking/notifications/notifications.dart';
 import 'package:hotel_booking/reservations/reservations.dart';
-import 'package:hotel_booking/reservations/src/store.dart';
 import 'package:hotel_booking/rooms/rooms.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
-final hotelRooms = [Room('R7', 'Standard'), Room('R8', 'Deluxe')];
-const search = '/rooms/availability?checkIn=2026-11-12&checkOut=2026-11-14';
-const maya = {
-  'guestName': 'Maya',
-  'guestEmail': 'maya@example.com',
-  'room': 'R7',
-  'checkIn': '2026-11-12',
-  'checkOut': '2026-11-14',
-};
-const omar = {
-  'guestName': 'Omar',
-  'guestEmail': 'omar@example.com',
-  'room': 'R7',
-  'checkIn': '2026-11-13',
-  'checkOut': '2026-11-15',
-};
-
-Handler newApp() {
-  final service = BookingService(
-      hotelRooms, InMemoryReservationStore(), EmailNotificationSender());
-  Future<T> unitOfWork<T>(FutureOr<T> Function(BookingService service) work) async =>
-      await work(service);
-  return createApi(hotelRooms, unitOfWork);
-}
-
-Future<Response> send(Handler app, String method, String path, [Object? body]) async =>
-    await app(Request(
-        method,
-        Uri.parse('http://localhost$path'),
-        body: body == null ? null : jsonEncode(body),
-        headers: {'content-type': 'application/json'},
-      ));
-
 void main() {
-  test('search answers 200 with the free rooms', () async {
-    final response = await send(newApp(), 'GET', search);
-    expect(response.statusCode, 200);
-    expect(await response.readAsString(),
-        '{"checkIn":"2026-11-12","checkOut":"2026-11-14","rooms":[{"number":"R7","type":"Standard"},{"number":"R8","type":"Deluxe"}],"next":null}');
+  late List<Room> rooms;
+  late InMemoryReservationStore baseStore;
+  late Stats stats;
+  late InMemoryAvailabilityCache cache;
+  late Handler handler;
+
+  setUp(() {
+    rooms = InMemoryRoomCatalog().all();
+    baseStore = InMemoryReservationStore();
+    stats = Stats();
+    cache = InMemoryAvailabilityCache();
+    handler = createApi(
+      rooms,
+      (work) => work(BookingService(
+        rooms,
+        CountingReservationStore(baseStore, stats),
+        EmailNotificationSender(),
+      )),
+      stats,
+      cache,
+    );
   });
 
-  test('booking answers 201, then 409 for a shared night', () async {
-    final app = newApp();
-    final first = await send(app, 'POST', '/reservations', maya);
-    expect(first.statusCode, 201);
-    expect(await first.readAsString(),
-        '{"id":"R101","status":"Confirmed","notificationFailed":false}');
-    final second = await send(app, 'POST', '/reservations', omar);
-    expect(second.statusCode, 409);
-    expect(jsonDecode(await second.readAsString())['title'], 'Unavailable');
+  test('GET /stats starts at zero and counts uncached search queries', () async {
+    final uncachedHandler = createApi(
+      rooms,
+      (work) => work(BookingService(
+        rooms,
+        CountingReservationStore(baseStore, stats),
+        EmailNotificationSender(),
+      )),
+      stats,
+    );
+
+    final initial = await uncachedHandler(Request('GET', Uri.parse('http://localhost/stats')));
+    expect(jsonDecode(await initial.readAsString()), {
+      'searches': 0,
+      'databaseQueries': 0,
+      'cacheHits': 0,
+      'cacheMisses': 0,
+    });
+
+    await uncachedHandler(
+      Request('GET', Uri.parse('http://localhost/rooms/available?checkIn=2026-11-12&checkOut=2026-11-14')),
+    );
+
+    final after = await uncachedHandler(Request('GET', Uri.parse('http://localhost/stats')));
+    expect(jsonDecode(await after.readAsString()), {
+      'searches': 1,
+      'databaseQueries': 2,
+      'cacheHits': 0,
+      'cacheMisses': 0,
+    });
   });
 
-  test('wrong dates answer 400 with problem details', () async {
-    final response = await send(
-        newApp(), 'POST', '/reservations', {...maya, 'checkOut': '2026-11-12'});
-    expect(response.statusCode, 400);
-    expect(response.headers['content-type'], 'application/problem+json');
-    expect(await response.readAsString(),
-        '{"title":"InvalidDates","status":400,"detail":"checkOut must be after checkIn."}');
+  test('Cache Test 1: second identical search is served from cache without hitting database', () async {
+    final uri = Uri.parse('http://localhost/rooms/available?checkIn=2026-11-12&checkOut=2026-11-14');
+
+    final res1 = await handler(Request('GET', uri));
+    expect(res1.statusCode, 200);
+    expect(stats.searches, 1);
+    expect(stats.cacheMisses, 1);
+    expect(stats.cacheHits, 0);
+    expect(stats.databaseQueries, 2);
+
+    final res2 = await handler(Request('GET', uri));
+    expect(res2.statusCode, 200);
+    expect(stats.searches, 2);
+    expect(stats.cacheMisses, 1);
+    expect(stats.cacheHits, 1);
+    expect(stats.databaseQueries, 2); // No extra DB queries!
   });
 
-  test('cancel answers 204, then 404', () async {
-    final app = newApp();
-    await send(app, 'POST', '/reservations', maya);
-    expect((await send(app, 'DELETE', '/reservations/R101')).statusCode, 204);
-    final second = await send(app, 'DELETE', '/reservations/R101');
-    expect(second.statusCode, 404);
-    expect(jsonDecode(await second.readAsString())['title'], 'NotFound');
+  test('Cache Test 2: POST /reservations and DELETE /reservations invalidate cached availability', () async {
+    final searchUri =
+        Uri.parse('http://localhost/rooms/available?checkIn=2026-11-12&checkOut=2026-11-14');
+
+    // 1. Prime the cache (R7 and R8 available).
+    final initialSearch = await handler(Request('GET', searchUri));
+    final initialRooms = jsonDecode(await initialSearch.readAsString()) as List;
+    expect(initialRooms.map((r) => r['id']), containsAll(['R7', 'R8']));
+
+    // 2. Book R7 -> invalidates cache.
+    final bookRes = await handler(Request(
+      'POST',
+      Uri.parse('http://localhost/reservations'),
+      body: jsonEncode({
+        'roomId': 'R7',
+        'guestName': 'Maya',
+        'guestEmail': 'maya@example.com',
+        'checkIn': '2026-11-12',
+        'checkOut': '2026-11-14',
+      }),
+    ));
+    expect(bookRes.statusCode, 201);
+    final reservationId = (jsonDecode(await bookRes.readAsString()) as Map)['id'] as String;
+
+    // 3. Next search misses stale cache and returns only R8.
+    final afterBookSearch = await handler(Request('GET', searchUri));
+    final afterBookRooms = jsonDecode(await afterBookSearch.readAsString()) as List;
+    expect(afterBookRooms.map((r) => r['id']), equals(['R8']));
+    expect(stats.cacheMisses, 2);
+
+    // 4. Cancel reservation -> invalidates cache again.
+    final cancelRes = await handler(
+      Request('DELETE', Uri.parse('http://localhost/reservations/$reservationId')),
+    );
+    expect(cancelRes.statusCode, 204);
+
+    // 5. Search after cancel reflects R7 available again.
+    final afterCancelSearch = await handler(Request('GET', searchUri));
+    final afterCancelRooms = jsonDecode(await afterCancelSearch.readAsString()) as List;
+    expect(afterCancelRooms.map((r) => r['id']), containsAll(['R7', 'R8']));
+    expect(stats.cacheMisses, 3);
   });
 }

@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run API (With Redis Cache)",
+      "request": "launch",
+      "type": "dart",
+      "program": "bin/main.dart"
+    },
+    {
+      "name": "Run API (No Cache - Step 1)",
+      "request": "launch",
+      "type": "dart",
+      "program": "bin/main.dart",
+      "env": {
+        "HOTEL_NO_CACHE": "1"
+      }
+    },
+    {
+      "name": "Run Measure Tool (1,000 searches)",
+      "request": "launch",
+      "type": "dart",
+      "program": "tool/measure.dart"
+    }
+  ]
+}

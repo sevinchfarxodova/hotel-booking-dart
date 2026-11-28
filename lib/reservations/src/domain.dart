@@ -1,21 +1,34 @@
-import 'package:hotel_booking/rooms/rooms.dart';
-
-/// A stay includes check-in and excludes check-out (half-open range).
 class DateRange {
-  const DateRange(this.checkIn, this.checkOut);
+  DateRange(this.checkIn, this.checkOut) {
+    if (!checkOut.isAfter(checkIn)) {
+      throw ArgumentError('checkOut must be after checkIn');
+    }
+  }
 
   final DateTime checkIn;
   final DateTime checkOut;
 
-  bool isValid() => checkOut.isAfter(checkIn);
+  int get nights => checkOut.difference(checkIn).inDays;
 
-  /// Two stays overlap when they share at least one night.
-  bool overlaps(DateRange other) =>
-      checkIn.isBefore(other.checkOut) && other.checkIn.isBefore(checkOut);
+  bool overlaps(DateRange other) {
+    return checkIn.isBefore(other.checkOut) && other.checkIn.isBefore(checkOut);
+  }
+
+  static DateRange parse(String checkInStr, String checkOutStr) {
+    final ci = DateTime.parse(checkInStr);
+    final co = DateTime.parse(checkOutStr);
+    return DateRange(DateTime.utc(ci.year, ci.month, ci.day), DateTime.utc(co.year, co.month, co.day));
+  }
+
+  String get checkInIso => _fmt(checkIn);
+  String get checkOutIso => _fmt(checkOut);
+
+  static String _fmt(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
 
 class Guest {
-  const Guest(this.name, this.email);
+  const Guest({required this.name, required this.email});
 
   final String name;
   final String email;
@@ -24,23 +37,27 @@ class Guest {
 enum ReservationStatus { confirmed, cancelled }
 
 class Reservation {
-  Reservation(this.id, this.guest, this.room, this.stay);
+  Reservation({
+    required this.id,
+    required this.roomId,
+    required this.guest,
+    required this.stay,
+    this.status = ReservationStatus.confirmed,
+  });
 
   final String id;
+  final String roomId;
   final Guest guest;
-  final Room room;
   final DateRange stay;
-  ReservationStatus _status = ReservationStatus.confirmed;
-  ReservationStatus get status => _status;
+  ReservationStatus status;
 
-  bool blocks(Room room, DateRange stay) =>
-      status == ReservationStatus.confirmed &&
-      this.room == room &&
-      this.stay.overlaps(stay);
-
-  bool cancel() {
-    if (_status == ReservationStatus.cancelled) return false;
-    _status = ReservationStatus.cancelled;
-    return true;
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'roomId': roomId,
+        'guestName': guest.name,
+        'guestEmail': guest.email,
+        'checkIn': stay.checkInIso,
+        'checkOut': stay.checkOutIso,
+        'status': status.name,
+      };
 }

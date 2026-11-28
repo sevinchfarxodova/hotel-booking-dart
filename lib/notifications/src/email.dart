@@ -1,9 +1,24 @@
-import '../notifications.dart';
+class Confirmation {
+  const Confirmation({
+    required this.reservationId,
+    required this.recipient,
+    required this.message,
+  });
 
-/// Simulates email delivery without network access.
+  final String reservationId;
+  final String recipient;
+  final String message;
+}
+
+abstract interface class NotificationSender {
+  void send(Confirmation confirmation);
+}
+
 class EmailNotificationSender implements NotificationSender {
-  int sent = 0;
+  final List<Confirmation> sent = [];
 
   @override
-  void sendConfirmation(Confirmation confirmation) => sent++;
+  void send(Confirmation confirmation) {
+    sent.add(confirmation);
+  }
 }

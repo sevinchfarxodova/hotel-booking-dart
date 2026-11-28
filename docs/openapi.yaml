@@ -1,138 +1,66 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
-  title: Hotel booking API
-  version: 1.0.0
-  description: Search free rooms, book a room and cancel a reservation.
-servers:
-  - url: http://localhost:5080
+  title: Hotel Booking API
+  version: 0.8.0
 paths:
-  /rooms/availability:
+  /rooms/available:
     get:
-      operationId: findFreeRooms
-      summary: Free rooms for a stay
+      summary: Search available rooms for a date range
       parameters:
         - name: checkIn
           in: query
           required: true
-          schema: { type: string, format: date }
-          example: "2026-11-12"
+          schema:
+            type: string
+            format: date
         - name: checkOut
           in: query
           required: true
-          description: The day the guest leaves. That night is not booked.
-          schema: { type: string, format: date }
-          example: "2026-11-14"
-        - name: limit
-          in: query
-          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
-        - name: after
-          in: query
-          description: The last room number of the previous page (the value of next).
-          schema: { type: string }
+          schema:
+            type: string
+            format: date
       responses:
-        "200":
-          description: Free rooms in text order of room number.
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Availability" }
-              example:
-                checkIn: "2026-11-12"
-                checkOut: "2026-11-14"
-                rooms:
-                  - { number: R7, type: Standard }
-                  - { number: R8, type: Deluxe }
-                next: null
-        "400":
-          $ref: "#/components/responses/Problem"
-          description: InvalidDates for missing or malformed dates or an invalid stay; InvalidRequest for limit outside 1–100.
+        '200':
+          description: List of available rooms
   /reservations:
     post:
-      operationId: reserve
-      summary: Book a room for a stay
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ReservationRequest" }
-            example: { guestName: Maya, guestEmail: maya@example.com, room: R7, checkIn: "2026-11-12", checkOut: "2026-11-14" }
+      summary: Create a new reservation
       responses:
-        "201":
-          description: Booked. The id names the new reservation.
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Reservation" }
-              example: { id: R101, status: Confirmed, notificationFailed: false }
-        "400":
-          $ref: "#/components/responses/Problem"
-          description: InvalidRequest for a malformed or incomplete body; InvalidDates for invalid dates; UnknownRoom for a room absent from the catalog.
-        "409":
-          $ref: "#/components/responses/Problem"
-          description: Unavailable when a confirmed stay shares at least one night.
+        '201':
+          description: Reservation confirmed
+        '409':
+          description: Room already booked for overlapping dates
   /reservations/{id}:
     delete:
-      operationId: cancel
-      summary: Cancel a confirmed reservation
+      summary: Cancel an existing reservation
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: string }
-          example: R101
+          schema:
+            type: string
       responses:
-        "204": { description: Cancelled; the nights are free again. }
-        "404":
-          $ref: "#/components/responses/Problem"
-          description: NotFound when there is no confirmed reservation with this id.
-components:
-  schemas:
-    Room:
-      type: object
-      required: [number, type]
-      properties:
-        number: { type: string, example: R7 }
-        type:
-          type: string
-          description: Catalog data such as Standard or Deluxe; new types do not require an API change.
-          example: Standard
-    Availability:
-      type: object
-      required: [checkIn, checkOut, rooms, next]
-      properties:
-        checkIn: { type: string, format: date }
-        checkOut: { type: string, format: date }
-        rooms: { type: array, items: { $ref: "#/components/schemas/Room" } }
-        next:
-          type: [string, "null"]
-          description: Pass as after to get the next page; null on the last page.
-    ReservationRequest:
-      type: object
-      required: [guestName, guestEmail, room, checkIn, checkOut]
-      properties:
-        guestName: { type: string, minLength: 1 }
-        guestEmail: { type: string, minLength: 1 }
-        room: { type: string, minLength: 1 }
-        checkIn: { type: string, format: date, minLength: 1 }
-        checkOut: { type: string, format: date, minLength: 1 }
-    Reservation:
-      type: object
-      required: [id, status, notificationFailed]
-      properties:
-        id: { type: string, example: R101 }
-        status: { type: string, enum: [Confirmed] }
-        notificationFailed: { type: boolean }
-    Problem:
-      type: object
-      required: [title, status, detail]
-      properties:
-        title:
-          type: string
-          enum: [Unavailable, InvalidDates, UnknownRoom, InvalidRequest, NotFound]
-          description: Clients compare title; detail is written for people.
-        status: { type: integer }
-        detail: { type: string }
-  responses:
-    Problem:
-      description: Problem details with a stable title and status.
-      content:
-        application/problem+json:
-          schema: { $ref: "#/components/schemas/Problem" }
+        '204':
+          description: Reservation cancelled
+        '404':
+          description: Reservation not found
+  /stats:
+    get:
+      summary: Runtime counters for searches, database queries, and cache hits/misses
+      responses:
+        '200':
+          description: Current in-memory counters
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [searches, databaseQueries, cacheHits, cacheMisses]
+                properties:
+                  searches:
+                    type: integer
+                  databaseQueries:
+                    type: integer
+                  cacheHits:
+                    type: integer
+                  cacheMisses:
+                    type: integer

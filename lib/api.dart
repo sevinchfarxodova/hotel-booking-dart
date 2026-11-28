@@ -1,147 +1,189 @@
-/// HTTP endpoints that adapt requests to public booking contracts.
-library;
-
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import 'api_cache.dart';
 import 'reservations/reservations.dart';
 import 'rooms/rooms.dart';
 
-typedef UnitOfWork = Future<T> Function<T>(
-    FutureOr<T> Function(BookingService service) work);
+// The four counters of GET /stats. A plain ++ is exact: Dart runs every request on one isolate.
+class Stats {
+  int searches = 0;
+  int databaseQueries = 0;
+  int cacheHits = 0;
+  int cacheMisses = 0;
 
-const fields = ['guestName', 'guestEmail', 'room', 'checkIn', 'checkOut'];
-const bodyDetail =
-    'The body must be JSON with guestName, guestEmail, room, checkIn and checkOut.';
-const dateDetail = 'checkIn and checkOut must be dates such as 2026-11-12.';
-final datePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+  Map<String, int> toJson() => {
+        'searches': searches,
+        'databaseQueries': databaseQueries,
+        'cacheHits': cacheHits,
+        'cacheMisses': cacheMisses,
+      };
+}
 
-Handler createApi(List<Room> rooms, UnitOfWork unitOfWork) {
+// Passes every call on to the real store and counts it: each call is one question to the database.
+class CountingReservationStore implements ReservationStore {
+  CountingReservationStore(this._store, this._stats);
+
+  final ReservationStore _store;
+  final Stats _stats;
+
+  @override
+  FutureOr<int> get count {
+    _stats.databaseQueries++;
+    return _store.count;
+  }
+
+  @override
+  FutureOr<bool> hasOverlap(Room room, DateRange stay) {
+    _stats.databaseQueries++;
+    return _store.hasOverlap(room, stay);
+  }
+
+  @override
+  FutureOr<void> save(Reservation reservation) {
+    _stats.databaseQueries++;
+    return _store.save(reservation);
+  }
+
+  @override
+  FutureOr<Reservation?> find(String id) {
+    _stats.databaseQueries++;
+    return _store.find(id);
+  }
+
+  @override
+  FutureOr<int> countConfirmed(Room room, DateRange stay) {
+    _stats.databaseQueries++;
+    return _store.countConfirmed(room, stay);
+  }
+}
+
+typedef UnitOfWork = Future<Response> Function(
+  Future<Response> Function(BookingService service) work,
+);
+
+Handler createApi(
+  List<Room> rooms,
+  UnitOfWork unitOfWork,
+  Stats stats, [
+  AvailabilityCache? cache,
+]) {
   final router = Router();
 
-  router.get('/openapi.yaml', (Request request) {
-    final contract = File('docs/openapi.yaml');
-    if (!contract.existsSync()) {
-      return Response(500, body: 'API contract file was not found.');
-    }
-    return Response.ok(contract.readAsStringSync(),
-        headers: {'content-type': 'application/yaml'});
+  Response jsonResponse(int status, Object body) => Response(
+        status,
+        body: jsonEncode(body),
+        headers: {'content-type': 'application/json'},
+      );
+
+  // GET /stats
+  router.get('/stats', (Request request) {
+    return jsonResponse(200, stats.toJson());
   });
 
-  router.get('/rooms/availability', (Request request) async {
-    final query = request.url.queryParameters;
-    final checkInText = query['checkIn'];
-    final checkOutText = query['checkOut'];
-    final checkIn = parseDate(checkInText);
-    final checkOut = parseDate(checkOutText);
+  // GET /rooms/available?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD
+  router.get('/rooms/available', (Request request) async {
+    final checkIn = request.url.queryParameters['checkIn'];
+    final checkOut = request.url.queryParameters['checkOut'];
     if (checkIn == null || checkOut == null) {
-      return problem(400, 'InvalidDates', dateDetail);
-    }
-    final stay = DateRange(checkIn, checkOut);
-    if (!stay.isValid()) {
-      return problem(400, 'InvalidDates', 'checkOut must be after checkIn.');
-    }
-    final limitText = query['limit'] ?? '20';
-    final limit = int.tryParse(limitText);
-    if (!RegExp(r'^[0-9]{1,3}$').hasMatch(limitText) || limit == null || limit < 1 || limit > 100) {
-      return problem(400, 'InvalidRequest', 'limit must be a whole number from 1 to 100.');
+      return jsonResponse(400, {'error': 'checkIn and checkOut are required'});
     }
 
-    final free = await unitOfWork((service) => service.findFreeRooms(stay));
-    final after = query['after'] ?? '';
-    final remaining = free.where((room) => room.number.compareTo(after) > 0).toList()
-      ..sort((a, b) => a.number.compareTo(b.number));
-    final page = remaining.take(limit).toList();
-    return jsonResponse(200, {
-      'checkIn': checkInText,
-      'checkOut': checkOutText,
-      'rooms': [for (final room in page) {'number': room.number, 'type': room.type}],
-      'next': remaining.length > page.length ? page.last.number : null,
+    final DateRange stay;
+    try {
+      stay = DateRange.parse(checkIn, checkOut);
+    } catch (e) {
+      return jsonResponse(400, {'error': 'Invalid date range: $e'});
+    }
+
+    stats.searches++;
+
+    if (cache != null) {
+      final cached = await cache.get(stay.checkInIso, stay.checkOutIso);
+      if (cached != null) {
+        stats.cacheHits++;
+        return jsonResponse(200, cached.map((r) => r.toJson()).toList());
+      }
+      stats.cacheMisses++;
+    }
+
+    return unitOfWork((service) async {
+      final available = await service.availableRooms(stay);
+      if (cache != null) {
+        await cache.set(stay.checkInIso, stay.checkOutIso, available);
+      }
+      return jsonResponse(200, available.map((r) => r.toJson()).toList());
     });
   });
 
+  // POST /reservations
   router.post('/reservations', (Request request) async {
-    if (request.mimeType != 'application/json') {
-      return problem(400, 'InvalidRequest', bodyDetail);
-    }
-    Object? decoded;
+    final Map<String, dynamic> body;
     try {
-      decoded = jsonDecode(await request.readAsString());
-    } on FormatException {
-      return problem(400, 'InvalidRequest', bodyDetail);
-    }
-    final body = decoded is Map ? decoded : const <Object?, Object?>{};
-    if (!fields.every((field) => body[field] is String && body[field] != '')) {
-      return problem(400, 'InvalidRequest', bodyDetail);
-    }
-    final checkIn = parseDate(body['checkIn']);
-    final checkOut = parseDate(body['checkOut']);
-    if (checkIn == null || checkOut == null) {
-      return problem(400, 'InvalidDates', dateDetail);
+      body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+    } catch (_) {
+      return jsonResponse(400, {'error': 'Invalid JSON'});
     }
 
-    Room? room;
-    for (final candidate in rooms) {
-      if (candidate.number == body['room']) {
-        room = candidate;
-        break;
-      }
-    }
-    if (room == null) {
-      return problem(400, 'UnknownRoom', 'There is no room ${body['room']}.');
+    final roomId = body['roomId'] as String?;
+    final guestName = body['guestName'] as String?;
+    final guestEmail = body['guestEmail'] as String?;
+    final checkIn = body['checkIn'] as String?;
+    final checkOut = body['checkOut'] as String?;
+
+    if (roomId == null ||
+        guestName == null ||
+        guestEmail == null ||
+        checkIn == null ||
+        checkOut == null) {
+      return jsonResponse(400, {'error': 'Missing required reservation fields'});
     }
 
-    final guest = Guest(body['guestName'] as String, body['guestEmail'] as String);
-    final result = await unitOfWork(
-        (service) => service.reserve(guest, room!, DateRange(checkIn, checkOut)));
-    return toHttp(result);
+    final DateRange stay;
+    try {
+      stay = DateRange.parse(checkIn, checkOut);
+    } catch (e) {
+      return jsonResponse(400, {'error': 'Invalid date range: $e'});
+    }
+
+    final response = await unitOfWork((service) async {
+      final result = await service.book(
+        roomId,
+        Guest(name: guestName, email: guestEmail),
+        stay,
+      );
+      return switch (result) {
+        BookingConfirmed(:final reservation) => jsonResponse(201, reservation.toJson()),
+        RoomUnavailable() => jsonResponse(409, {'error': 'Room $roomId is not available'}),
+        UnknownRoom() => jsonResponse(404, {'error': 'Unknown room $roomId'}),
+      };
+    });
+
+    // Step 6: Invalidate cache after database commit succeeds.
+    if (response.statusCode == 201 && cache != null) {
+      await cache.invalidate();
+    }
+    return response;
   });
 
+  // DELETE /reservations/<id>
   router.delete('/reservations/<id>', (Request request, String id) async {
-    final cancelled = await unitOfWork((service) => service.cancel(id));
-    if (!cancelled) {
-      return problem(404, 'NotFound', 'There is no confirmed reservation $id.');
+    final response = await unitOfWork((service) async {
+      final cancelled = await service.cancel(id);
+      if (!cancelled) {
+        return jsonResponse(404, {'error': 'Reservation $id not found'});
+      }
+      return Response(204);
+    });
+
+    // Step 6: Invalidate cache after cancellation commits.
+    if (response.statusCode == 204 && cache != null) {
+      await cache.invalidate();
     }
-    return Response(204);
+    return response;
   });
 
   return router.call;
-}
-
-DateTime? parseDate(Object? value) {
-  if (value is! String || !datePattern.hasMatch(value)) return null;
-  final parsed = DateTime.tryParse('${value}T00:00:00Z');
-  if (parsed == null || !parsed.toIso8601String().startsWith(value)) return null;
-  return parsed;
-}
-
-Response jsonResponse(int status, Object? value) => Response(
-      status,
-      body: jsonEncode(value),
-      headers: {'content-type': 'application/json'},
-    );
-
-Response problem(int status, String title, String detail) => Response(
-      status,
-      body: jsonEncode({'title': title, 'status': status, 'detail': detail}),
-      headers: {'content-type': 'application/problem+json'},
-    );
-
-Response toHttp(BookingResult result) {
-  if (result.outcome == 'Accepted') {
-    return jsonResponse(201, {
-      'id': result.reservationId,
-      'status': 'Confirmed',
-      'notificationFailed': result.notificationFailed,
-    });
-  }
-  if (result.outcome == 'Unavailable') {
-    return problem(409, 'Unavailable',
-        'The room is booked for at least one night of this stay.');
-  }
-  return problem(400, 'InvalidDates', 'checkOut must be after checkIn.');
 }

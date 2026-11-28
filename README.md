@@ -1,45 +1,78 @@
-# P07 · Hotel booking in Dart
+# P08 · Hotel Booking (Dart + PostgreSQL + Redis)
 
-P07 extends the P06 modular monolith with a Shelf HTTP API and PostgreSQL persistence. The app exposes room availability, reservation creation and cancellation at `http://localhost:5080`; it serves its contract from `/openapi.yaml`. The booking rule stays in Reservations. The intentional race remains until P09.
+Complete P08 implementation featuring cache-aside room availability in Redis, runtime search/database/cache metrics (`GET /stats`), event-driven cache invalidation, and a 1,000-request benchmark tool.
 
-## Requirements
+## Project Structure
 
-- Dart 3 or later
-- Docker Desktop with the Docker engine running
-- Internet for the first dependency and PostgreSQL image downloads
+```text
+hotel-booking/
+├── .vscode/
+│   ├── launch.json          # Debug/Run configurations for API server & benchmark tool
+│   └── tasks.json           # VS Code tasks for Docker, tests, and benchmarks
+├── bin/
+│   └── main.dart            # Application entrypoint & dependency wiring
+├── db/
+│   └── init.sql             # PostgreSQL schema and seed rooms (R7, R8)
+├── docs/
+│   ├── requests/            # Sample JSON payloads (maya-r7, omar-r7, omar-r8)
+│   ├── adr-002-cache-availability.md
+│   ├── cache-experiment.md
+│   ├── capacity.md
+│   ├── design-notes.md
+│   └── openapi.yaml
+├── lib/
+│   ├── api.dart             # HTTP endpoints, Stats, CountingReservationStore, invalidation
+│   ├── api_cache.dart       # RedisAvailabilityCache & InMemoryAvailabilityCache
+│   ├── notifications/       # Email & SMS notification senders
+│   ├── payments/            # Simulated payment service
+│   ├── reservations/        # BookingService, domain models, InMemory & Postgres stores
+│   └── rooms/               # Room models & catalogs
+├── test/
+│   ├── api_test.dart        # GET /stats & Redis cache hit/miss/invalidation tests
+│   ├── architecture_test.dart
+│   └── booking_service_test.dart
+├── tool/
+│   └── measure.dart         # 1,000-search latency & /stats benchmark runner
+├── docker-compose.yml       # PostgreSQL 16 + Redis 7 services
+├── pubspec.yaml
+└── README.md
+```
 
-## Run
+## Running the Experiments
 
-```sh
-dart pub get
-dart analyze
-dart test
-docker compose up -d
-docker compose ps
-docker compose exec db psql -U hotel -d hotel -c "SELECT * FROM rooms;"
-dart run bin/main.dart --demo
-dart run bin/main.dart --race
+### Step 1 · Baseline Measurement (No Cache)
+Start the server without Redis caching (`F5` -> **Run API (No Cache - Step 1)** or in Terminal 1):
+```bash
+HOTEL_NO_CACHE=1 dart run bin/main.dart
+```
+In Terminal 2, run the 1,000-search measurement tool:
+```bash
+dart run tool/measure.dart
+```
+Expected result: `searches=1000, databaseQueries=2000, cacheHits=0, cacheMisses=0`.
+
+### Step 4 · Cached Measurement (Redis Cache-Aside, TTL 30s)
+Restart the server with Redis enabled (`F5` -> **Run API (With Redis Cache)** or in Terminal 1):
+```bash
 dart run bin/main.dart
 ```
-
-The API starts on `http://localhost:5080`. Use `--demo` and `--race` to run the P06 console demonstrations without PostgreSQL. The automated tests comprise 8 booking behavior tests, 3 architecture tests and 4 API tests (15 total); the API tests use in-memory storage. The PostgreSQL request and restart checks are documented in [docs/api-check.md](docs/api-check.md).
-
-If port 5432 is busy, use the same alternate port for Docker and the Dart app:
-
-```sh
-export HOTEL_DB_PORT=15432
-docker compose up -d
-HOTEL_DB_PORT=15432 dart run bin/main.dart
+In Terminal 2, run the measurement tool again:
+```bash
+dart run tool/measure.dart
 ```
+Expected result: `searches=1000, databaseQueries=2, cacheHits=999, cacheMisses=1`.
 
-## Project notes
+### Manual Curl Checks (Step 5 & Step 6)
+```bash
+# Search available rooms
+curl "http://localhost:5080/rooms/available?checkIn=2026-11-12&checkOut=2026-11-14"
 
-- [Capacity estimate](docs/capacity.md)
-- [API contract](docs/openapi.yaml)
-- [API request and restart check](docs/api-check.md)
-- [L04 assumptions and decisions](docs/l04-notes.md)
-- [Design notes](docs/design-notes.md)
-- [ADR-001](docs/adr-001-modular-monolith.md)
-- [Editable diagrams](docs/diagrams.drawio)
+# Book R7 for Maya (invalidates cache)
+curl -X POST http://localhost:5080/reservations -H "Content-Type: application/json" -d @docs/requests/maya-r7.json
 
-Stop PostgreSQL and preserve its data with `docker compose down`. Use `docker compose down -v` only when you want to remove the data volume and reset the database.
+# Attempt to book R7 for Omar (returns 409 Conflict from PostgreSQL)
+curl -X POST http://localhost:5080/reservations -H "Content-Type: application/json" -d @docs/requests/omar-r7.json
+
+# Check runtime stats
+curl http://localhost:5080/stats
+```
